@@ -41,8 +41,13 @@ describe Tsclient::ApiFinder do
     end
   end
 
-  # describe "on linux with default socket present"
-  # describe "on linux with default socket missing"
+  describe "on linux with default socket present" do
+    it "returns URI::Generic with unix socket path" do
+      uri = Tsclient::ApiFinder.new.call(env: {}, ruby_platform: "x86_64-linux")
+
+      _(uri).must_equal(URI("unix:///var/run/tailscale/tailscaled.sock"))
+    end
+  end
 
   describe "when unable to find api" do
     it "returns nil" do
