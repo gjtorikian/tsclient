@@ -26,6 +26,15 @@ module Tsclient
       end
     end
 
+    def status
+      response = api_get(:status)
+      if response.error?
+        nil
+      else
+        Status.from(response.result)
+      end
+    end
+
     private
 
     def api_get(endpoint, params = {})
