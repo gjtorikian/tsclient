@@ -41,11 +41,33 @@ describe Tsclient::ApiFinder do
     end
   end
 
+
+  def with_mocked_socket(exists:, &blk)
+    file_mock = MiniTest::Mock.new
+    File.stub(:exist?, exists, file_mock) do
+      yield
+    end
+
+    file_mock.verify
+  end
+
   describe "on linux with default socket present" do
     it "returns URI::Generic with unix socket path" do
-      uri = Tsclient::ApiFinder.new.call(env: {}, ruby_platform: "x86_64-linux")
+      with_mocked_socket(exists: true) do
+        uri = Tsclient::ApiFinder.new.call(env: {}, ruby_platform: "x86_64-linux")
 
-      _(uri).must_equal(URI("unix:///var/run/tailscale/tailscaled.sock"))
+        _(uri).must_equal(URI("unix:///var/run/tailscale/tailscaled.sock"))
+      end
+    end
+  end
+
+  describe "on linux with default socket missing" do
+    it "returns no uri" do
+      with_mocked_socket(exists: false) do
+        uri = Tsclient::ApiFinder.new.call(env: {}, ruby_platform: "x86_64-linux")
+
+        _(uri).must_be_nil
+      end
     end
   end
 
